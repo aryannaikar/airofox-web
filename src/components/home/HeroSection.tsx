@@ -31,12 +31,14 @@ export default function HeroSection() {
             </div>
           </div>
 
-          <div className="relative h-[356px] rounded-3xl bg-brand-navy/10 overflow-hidden">
+          <div className="relative w-full min-h-[420px] rounded-3xl overflow-hidden">
             <Image
-              src="/HeroImg.jpg"
-              alt="Hero Image"
+              src="/NewHero.jpeg"
+              alt="Hero showcasing home services"
               fill
-              className="object-contain"
+              sizes="100vw"
+              className="object-contain object-center"
+              priority
             />
           </div>
         </div>
