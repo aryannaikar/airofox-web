@@ -14,7 +14,7 @@ export default function HeroSection() {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
             <h1 className="text-5xl md:text-6xl font-bold text-brand-navy leading-tight">
-              Fast Home Services at Your Doorstep
+              Premium Home Services at Your Fingertips
             </h1>
 
             <p className="mt-6 text-lg text-brand-slate">
