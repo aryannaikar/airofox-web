@@ -82,11 +82,25 @@ export default function Header() {
           </nav>
 
           {/* Desktop CTA */}
-          <a href="tel:+919326065836" className="hidden md:flex items-center justify-center" style={{ background: '#08244c', color: '#fff', textDecoration: 'none', borderRadius: '10px', padding: '12px 24px', fontWeight: 700, fontSize: '14px', transition: 'background 0.25s' }}
-            onMouseEnter={e => e.currentTarget.style.background = '#ff7a00'}
-            onMouseLeave={e => e.currentTarget.style.background = '#08244c'}>
-            Book Now
-          </a>
+          <div className="hidden md:flex items-center gap-6">
+            <Link
+              href="/login"
+              style={{
+                fontWeight: 600,
+                fontSize: '15px',
+                textDecoration: 'none',
+                color: pathname === '/login' || pathname === '/register' ? '#ff7a00' : '#334155',
+                transition: 'color 0.2s',
+              }}
+            >
+              Sign In
+            </Link>
+            <a href="tel:+919326065836" className="flex items-center justify-center" style={{ background: '#08244c', color: '#fff', textDecoration: 'none', borderRadius: '10px', padding: '12px 24px', fontWeight: 700, fontSize: '14px', transition: 'background 0.25s' }}
+              onMouseEnter={e => e.currentTarget.style.background = '#ff7a00'}
+              onMouseLeave={e => e.currentTarget.style.background = '#08244c'}>
+              Book Now
+            </a>
+          </div>
 
           {/* Hamburger */}
           <button
@@ -207,6 +221,44 @@ export default function Header() {
               </Link>
             );
           })}
+
+          {/* Mobile Sign In */}
+          <Link
+            href="/login"
+            onClick={() => setOpen(false)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '14px',
+              padding: '14px 12px',
+              borderRadius: '14px',
+              textDecoration: 'none',
+              marginTop: '4px',
+              background: pathname === '/login' || pathname === '/register' ? 'rgba(255,122,0,0.08)' : 'transparent',
+              color: pathname === '/login' || pathname === '/register' ? '#ff7a00' : '#334155',
+              fontWeight: pathname === '/login' || pathname === '/register' ? 700 : 600,
+              fontSize: '15px',
+              transition: 'all 0.18s ease',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            <span style={{
+              width: '40px', height: '40px', borderRadius: '11px', flexShrink: 0,
+              background: pathname === '/login' || pathname === '/register' ? 'rgba(255,122,0,0.12)' : '#f8fafc',
+              color: pathname === '/login' || pathname === '/register' ? '#ff7a00' : '#64748b',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              border: `1.5px solid ${pathname === '/login' || pathname === '/register' ? 'rgba(255,122,0,0.2)' : '#f1f5f9'}`,
+              transition: 'all 0.18s ease',
+            }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>
+              </svg>
+            </span>
+            Sign In / Register
+            {(pathname === '/login' || pathname === '/register') && (
+              <span style={{ marginLeft: 'auto', width: '7px', height: '7px', borderRadius: '50%', background: '#ff7a00' }} />
+            )}
+          </Link>
         </nav>
 
         {/* Divider */}
