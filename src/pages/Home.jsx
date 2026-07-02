@@ -103,7 +103,11 @@ export default function Home() {
               </p>
               
               <div className="flex gap-4 mt-6">
-                <a href="tel:+919326065836" className="inline-flex items-center justify-center rounded-xl px-7 py-[18px] text-base font-semibold transition-all duration-300 shadow-md gap-2 bg-brand-navy text-white hover:bg-brand-orange">
+                <a
+                  href="tel:+919326065836"
+                  className="inline-flex items-center justify-center rounded-xl text-base font-semibold transition-all duration-300 shadow-md gap-2 bg-brand-navy text-white hover:bg-brand-orange"
+                  style={{ padding: '16px 28px' }}
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="18"
@@ -124,7 +128,8 @@ export default function Home() {
                   href="https://wa.me/919326065836?text=Hi%20AiroFox%2C%20I%20need%20help%20with%20home%20services."
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center rounded-xl px-7 py-[18px] text-base font-semibold transition-all duration-300 bg-green-500 text-white hover:bg-green-600 shadow-md gap-2"
+                  className="inline-flex items-center justify-center rounded-xl text-base font-semibold transition-all duration-300 bg-green-500 text-white hover:bg-green-600 shadow-md gap-2"
+                  style={{ padding: '16px 28px' }}
                 >
                   <svg
                     stroke="currentColor"
@@ -598,7 +603,11 @@ export default function Home() {
               Contact AiroFox now for quick and reliable service.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
-              <a href="tel:+919326065836" className="inline-flex items-center justify-center rounded-xl px-7 py-4.5 text-base font-semibold transition-all duration-300 shadow-md gap-2 bg-white text-brand-navy hover:bg-brand-orange hover:text-white sm:min-w-[180px]">
+              <a
+                href="tel:+919326065836"
+                className="inline-flex items-center justify-center rounded-xl text-base font-semibold transition-all duration-300 shadow-md gap-2 bg-white text-brand-navy hover:bg-brand-orange hover:text-white sm:min-w-[180px]"
+                style={{ padding: '16px 28px' }}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="18"
@@ -619,7 +628,8 @@ export default function Home() {
                 href="https://wa.me/919326065836?text=Hi%20AiroFox%2C%20I%20need%20help%20with%20home%20services."
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center rounded-xl px-7 py-4.5 text-base font-semibold transition-all duration-300 bg-green-500 text-white hover:bg-green-600 shadow-md gap-2 sm:min-w-[180px]"
+                className="inline-flex items-center justify-center rounded-xl text-base font-semibold transition-all duration-300 bg-green-500 text-white hover:bg-green-600 shadow-md gap-2 sm:min-w-[180px]"
+                style={{ padding: '16px 28px' }}
               >
                 <svg
                   stroke="currentColor"

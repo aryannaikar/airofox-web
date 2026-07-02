@@ -119,7 +119,11 @@ export default function Services() {
 
                   {/* CTA Buttons */}
                   <div className="flex items-center gap-4 mt-10">
-                    <a href="tel:+919326065836" className="inline-flex items-center justify-center rounded-xl px-5 py-3.5 text-sm font-semibold transition-all duration-300 gap-2 bg-transparent text-white hover:bg-white/10">
+                    <a
+                      href="tel:+919326065836"
+                      className="inline-flex items-center justify-center rounded-xl text-sm font-semibold transition-all duration-300 gap-2 bg-transparent text-white hover:bg-white/10"
+                      style={{ padding: '14px 28px' }}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="18"
@@ -140,7 +144,8 @@ export default function Services() {
                       href={`https://wa.me/919326065836?text=Hi%20AiroFox%2C%20I%20need%20help%20with%20${encodeURIComponent(service.title)}.`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center rounded-xl px-6 py-3.5 text-sm font-semibold transition-all duration-300 bg-green-500 text-white hover:bg-green-600 hover:-translate-y-0.5 shadow-md gap-2"
+                      className="inline-flex items-center justify-center rounded-xl text-sm font-semibold transition-all duration-300 bg-green-500 text-white hover:bg-green-600 hover:-translate-y-0.5 shadow-md gap-2"
+                      style={{ padding: '14px 28px' }}
                     >
                       <svg
                         stroke="currentColor"
