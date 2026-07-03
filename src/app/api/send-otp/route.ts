@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import crypto from 'crypto';
+
+const SECRET = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'airofox-secret-otp-salt-key';
 
 export async function POST(request: Request) {
   try {
@@ -11,6 +14,9 @@ export async function POST(request: Request) {
 
     // Generate a 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Calculate a secure validation token
+    const token = crypto.createHmac('sha256', SECRET).update(`${email.toLowerCase()}:${otp}`).digest('hex');
 
     // Check if SMTP is configured
     const smtpHost = process.env.SMTP_HOST;
@@ -28,7 +34,7 @@ export async function POST(request: Request) {
         const transporter = nodemailer.createTransport({
           host: smtpHost,
           port: parseInt(smtpPort || '587'),
-          secure: process.env.SMTP_SECURE === 'true', // true for port 465, false for other ports
+          secure: process.env.SMTP_SECURE === 'true',
           auth: {
             user: smtpUser,
             pass: smtpPass,
@@ -39,12 +45,8 @@ export async function POST(request: Request) {
           ? 'Verify your AiroFox Account' 
           : 'Reset your AiroFox Password';
 
-        const titleText = type === 'register'
-          ? 'Confirm your Registration'
-          : 'Password Reset Request';
-
         const bodyHtml = `
-          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 550px; margin: 0 auto; padding: 30px; border: 1px solid #e2e8f0; rounded-corners: 16px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 550px; margin: 0 auto; padding: 30px; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
             <div style="text-align: center; margin-bottom: 25px;">
               <h2 style="color: #0F172A; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">AiroFox</h2>
               <p style="color: #64748B; font-size: 14px; margin-top: 5px;">Home Services in Mumbai</p>
@@ -66,7 +68,7 @@ export async function POST(request: Request) {
             </div>
             
             <p style="color: #64748B; font-size: 13px; line-height: 1.5; margin-bottom: 25px;">
-              If you did not initiate this request, please ignore this email or contact support if you suspect unauthorized access.
+              If you did not initiate this request, please ignore this email.
             </p>
             
             <hr style="border: 0; border-top: 1px solid #f1f5f9; margin-bottom: 20px;" />
@@ -95,12 +97,23 @@ export async function POST(request: Request) {
     // Always log OTP in terminal for local testing
     console.log(`\n==========================================\n[OTP DEBUG] Sent to: ${email}\nAction Type: ${type}\nOTP Code: ${otp}\n==========================================\n`);
 
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    // In production, if email sending failed, return failure response
+    if (isProduction && !emailSent) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Failed to send verification email. Please check your SMTP settings or try again later.' 
+      }, { status: 500 });
+    }
+
     return NextResponse.json({
       success: true,
-      otp: otp, // In development, return the OTP so the frontend can show it in a toast/banner
+      token: token,
+      otp: isProduction ? undefined : otp, // Expose OTP code ONLY in development environment
       emailSent: emailSent,
-      devMode: !emailSent,
-      errorDetails: errorDetails
+      devMode: !emailSent && !isProduction,
+      errorDetails: isProduction ? '' : errorDetails
     });
   } catch (error: any) {
     console.error('Send OTP API error:', error);

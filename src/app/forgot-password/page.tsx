@@ -13,6 +13,7 @@ export default function ForgotPassword() {
   const [email, setEmail] = useState('');
   const [otpValues, setOtpValues] = useState<string[]>(Array(6).fill(''));
   const [generatedOtp, setGeneratedOtp] = useState('');
+  const [otpToken, setOtpToken] = useState('');
   const [resendTimer, setResendTimer] = useState(0);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -98,7 +99,8 @@ export default function ForgotPassword() {
       const data = await res.json();
 
       if (data.success) {
-        setGeneratedOtp(data.otp);
+        setOtpToken(data.token);
+        if (data.otp) setGeneratedOtp(data.otp);
         setStep(2);
         setResendTimer(60);
         setStatus({
@@ -118,7 +120,7 @@ export default function ForgotPassword() {
   };
 
   // Step 2: Verify OTP
-  const handleVerifyOtp = (e: React.FormEvent) => {
+  const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     const enteredOtp = otpValues.join('');
     if (enteredOtp.length !== 6) {
@@ -126,14 +128,28 @@ export default function ForgotPassword() {
       return;
     }
 
-    if (enteredOtp !== generatedOtp) {
-      setStatus({ type: 'error', message: 'Incorrect verification code. Please try again.' });
-      return;
-    }
-
-    // OTP correct, proceed to password reset form
+    setIsSubmitting(true);
     setStatus({ type: '', message: '' });
-    setStep(3);
+
+    try {
+      const res = await fetch('/api/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp: enteredOtp, token: otpToken }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        // OTP correct, proceed to password reset form
+        setStatus({ type: '', message: '' });
+        setStep(3);
+      } else {
+        setStatus({ type: 'error', message: data.error || 'Incorrect verification code. Please try again.' });
+      }
+    } catch (err: any) {
+      setStatus({ type: 'error', message: 'Failed to verify code. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Step 3: Reset Password

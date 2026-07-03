@@ -41,6 +41,7 @@ export default function Register() {
   const [showOtpVerification, setShowOtpVerification] = useState(false);
   const [otpValues, setOtpValues] = useState<string[]>(Array(6).fill(''));
   const [generatedOtp, setGeneratedOtp] = useState('');
+  const [otpToken, setOtpToken] = useState('');
   const [resendTimer, setResendTimer] = useState(0);
   const [otpStatus, setOtpStatus] = useState({ type: '', message: '' });
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -78,7 +79,8 @@ export default function Register() {
       });
       const data = await res.json();
       if (data.success) {
-        setGeneratedOtp(data.otp);
+        setOtpToken(data.token);
+        if (data.otp) setGeneratedOtp(data.otp);
         setShowOtpVerification(true);
         setResendTimer(60);
         setOtpStatus({
@@ -148,7 +150,8 @@ export default function Register() {
       });
       const data = await res.json();
       if (data.success) {
-        setGeneratedOtp(data.otp);
+        setOtpToken(data.token);
+        if (data.otp) setGeneratedOtp(data.otp);
         setShowOtpVerification(true);
         setResendTimer(60);
         setOtpStatus({
@@ -352,17 +355,31 @@ export default function Register() {
       return;
     }
 
-    if (enteredOtp !== generatedOtp) {
-      setOtpStatus({ type: 'error', message: 'Incorrect verification code. Please check your email or resend code.' });
-      return;
-    }
-
-    // OTP is correct! Mark email as verified
-    setIsEmailVerified(true);
-    setShowOtpVerification(false);
-    setOtpValues(Array(6).fill(''));
-    setStatus({ type: 'success', message: 'Email address verified successfully!' });
+    setIsSubmitting(true);
     setOtpStatus({ type: '', message: '' });
+
+    try {
+      const res = await fetch('/api/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: userFormData.email, otp: enteredOtp, token: otpToken }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        // OTP is correct! Mark email as verified
+        setIsEmailVerified(true);
+        setShowOtpVerification(false);
+        setOtpValues(Array(6).fill(''));
+        setStatus({ type: 'success', message: 'Email address verified successfully!' });
+        setOtpStatus({ type: '', message: '' });
+      } else {
+        setOtpStatus({ type: 'error', message: data.error || 'Incorrect verification code. Please try again.' });
+      }
+    } catch (err: any) {
+      setOtpStatus({ type: 'error', message: 'Failed to verify code. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleWorkerSubmit = (e: React.FormEvent) => {
