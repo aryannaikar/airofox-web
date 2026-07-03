@@ -322,7 +322,7 @@ export default function AdminDashboard() {
                           </div>
                           
                           <p className="text-xs text-brand-slate/80 font-medium mt-1">
-                            📞 {worker.phone} &nbsp;|&nbsp; ✉️ {worker.email}
+                            📞 {worker.phone} {worker.email && ` | ✉️ ${worker.email}`}
                           </p>
                           
                           <div className="flex flex-wrap gap-1.5 mt-2.5">

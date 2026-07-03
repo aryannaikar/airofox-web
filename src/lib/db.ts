@@ -26,7 +26,7 @@ export interface User {
 export interface WorkerProfile {
   id: string;
   name: string;
-  email: string;
+  email?: string;
   age: number;
   gender: string;
   phone: string;
@@ -379,7 +379,25 @@ class Database {
       if (data) return data;
     }
     const workers = await this.getWorkers();
-    return workers.find(w => w.email.toLowerCase() === email.toLowerCase());
+    return workers.find(w => w.email && w.email.toLowerCase() === email.toLowerCase());
+  }
+
+  async getWorkerByEmailOrPhone(identifier: string): Promise<WorkerProfile | undefined> {
+    const cleanId = identifier.trim().toLowerCase();
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase
+        .from('workers')
+        .select('*')
+        .or(`email.eq.${cleanId},phone.eq.${cleanId}`)
+        .single();
+      if (error && error.code !== 'PGRST116') console.error('Supabase error:', error);
+      if (data) return data;
+    }
+    const workers = await this.getWorkers();
+    return workers.find(w => 
+      (w.email && w.email.toLowerCase() === cleanId) || 
+      (w.phone && w.phone.replace(/[\s-()]/g, '') === cleanId.replace(/[\s-()]/g, ''))
+    );
   }
 
   async getWorkerById(id: string): Promise<WorkerProfile | undefined> {
@@ -393,10 +411,11 @@ class Database {
   }
 
   async registerWorker(worker: Partial<WorkerProfile>): Promise<WorkerProfile> {
+    const cleanEmail = worker.email && worker.email.trim() !== '' ? worker.email.trim().toLowerCase() : undefined;
     const newWorker: WorkerProfile = {
       id: `worker-${Date.now()}`,
       name: worker.name || '',
-      email: worker.email || '',
+      email: cleanEmail,
       age: worker.age || 18,
       gender: worker.gender || 'Male',
       phone: worker.phone || '',

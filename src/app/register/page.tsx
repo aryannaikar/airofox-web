@@ -141,7 +141,7 @@ export default function Register() {
   const validateWorkerStep = (step: number) => {
     setStatus({ type: '', message: '' });
     if (step === 1) {
-      if (!workerFormData.name || !workerFormData.email || !workerFormData.phone || !workerFormData.age || !workerFormData.photo) {
+      if (!workerFormData.name || !workerFormData.phone || !workerFormData.age || !workerFormData.photo) {
         setStatus({ type: 'error', message: 'Please fill in all details, including uploading your photo.' });
         return false;
       }
@@ -150,10 +150,12 @@ export default function Register() {
         setStatus({ type: 'error', message: 'Worker age must be between 18 and 65.' });
         return false;
       }
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(workerFormData.email)) {
-        setStatus({ type: 'error', message: 'Please enter a valid email address.' });
-        return false;
+      if (workerFormData.email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(workerFormData.email)) {
+          setStatus({ type: 'error', message: 'Please enter a valid email address.' });
+          return false;
+        }
       }
       const phoneRegex = /^[0-9]{10}$/;
       if (!phoneRegex.test(workerFormData.phone.replace(/[\s-()]/g, ''))) {
@@ -450,11 +452,11 @@ export default function Register() {
                             />
                           </div>
                           <div className="space-y-1.5">
-                            <label className="text-sm font-semibold text-brand-navy block" htmlFor="email">Email Address</label>
+                            <label className="text-sm font-semibold text-brand-navy block" htmlFor="email">Email Address (Optional)</label>
                             <Input
                               id="email" type="email" name="email" placeholder="rahul@example.com"
                               value={workerFormData.email} onChange={handleWorkerInputChange}
-                              className="h-12 rounded-2xl border border-brand-border bg-white" required
+                              className="h-12 rounded-2xl border border-brand-border bg-white"
                             />
                           </div>
                         </div>

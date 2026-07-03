@@ -34,11 +34,23 @@ export default function Login() {
       return;
     }
 
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      setStatus({ type: 'error', message: 'Please enter a valid email address.' });
-      return;
+    // Basic email/phone validation
+    if (role === 'worker') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const phoneRegex = /^[0-9]{10}$/;
+      const identifier = formData.email.trim();
+      const isEmail = emailRegex.test(identifier);
+      const isPhone = phoneRegex.test(identifier.replace(/[\s-()]/g, ''));
+      if (!isEmail && !isPhone) {
+        setStatus({ type: 'error', message: 'Please enter a valid email address or 10-digit phone number.' });
+        return;
+      }
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        setStatus({ type: 'error', message: 'Please enter a valid email address.' });
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -48,11 +60,11 @@ export default function Login() {
       setIsSubmitting(false);
 
       if (role === 'worker') {
-        const worker = await db.getWorkerByEmail(formData.email);
+        const worker = await db.getWorkerByEmailOrPhone(formData.email);
         if (!worker) {
           setStatus({
             type: 'error',
-            message: 'No worker account found with this email. Please register as a partner.',
+            message: 'No worker account found. Please register as a partner.',
           });
           return;
         }
@@ -168,10 +180,10 @@ export default function Login() {
                 </button>
               </div>
 
-              {/* Email Input */}
+              {/* Email/Identifier Input */}
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold text-brand-navy block" htmlFor="email">
-                  Email Address
+                  {role === 'worker' ? 'Email or Contact Number' : 'Email Address'}
                 </label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-4 flex items-center text-gray-400">
@@ -179,9 +191,9 @@ export default function Login() {
                   </span>
                   <Input
                     id="email"
-                    type="email"
+                    type={role === 'worker' ? 'text' : 'email'}
                     name="email"
-                    placeholder={role === 'worker' ? 'partner@airofox.com' : 'name@example.com'}
+                    placeholder={role === 'worker' ? 'partner@airofox.com or 9876543210' : 'name@example.com'}
                     value={formData.email}
                     onChange={handleInputChange}
                     className="pl-11 h-12 rounded-2xl border border-brand-border bg-white focus-visible:border-brand-orange focus-visible:ring-brand-orange/20"
