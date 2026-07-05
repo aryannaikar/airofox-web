@@ -88,10 +88,29 @@ export default function Header() {
     navigator.geolocation.getCurrentPosition(async (position) => {
       try {
         const { latitude, longitude } = position.coords;
-        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+        // BigDataCloud is more reliable for client-side reverse geocoding as Nominatim often blocks generic browser requests
+        const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
         const data = await res.json();
-        if (data && data.display_name) {
-          setProfileData(prev => ({ ...prev, address: data.display_name }));
+        
+        let addressStr = '';
+        if (data.locality) addressStr += data.locality + ', ';
+        if (data.city && data.city !== data.locality) addressStr += data.city + ', ';
+        if (data.principalSubdivision) addressStr += data.principalSubdivision + ', ';
+        if (data.countryName) addressStr += data.countryName;
+        
+        // Fallback to nominatim if BigDataCloud doesn't give a good result
+        if (addressStr.length < 10) {
+           const nomRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+           const nomData = await nomRes.json();
+           if (nomData && nomData.display_name) {
+             addressStr = nomData.display_name;
+           }
+        }
+        
+        if (addressStr) {
+          setProfileData(prev => ({ ...prev, address: addressStr.replace(/,\s*$/, "") }));
+        } else {
+          alert("Could not determine address from location");
         }
       } catch (e) {
         console.error(e);
@@ -99,10 +118,14 @@ export default function Header() {
       } finally {
         setIsLocating(false);
       }
-    }, () => {
+    }, (error) => {
       setIsLocating(false);
-      alert("Unable to retrieve your location");
-    });
+      if (error.code === error.PERMISSION_DENIED) {
+        alert("Location access was denied. Please allow location access in your browser settings.");
+      } else {
+        alert("Unable to retrieve your location. Please try again.");
+      }
+    }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
   };
 
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
