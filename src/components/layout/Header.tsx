@@ -88,29 +88,53 @@ export default function Header() {
     navigator.geolocation.getCurrentPosition(async (position) => {
       try {
         const { latitude, longitude } = position.coords;
-        // BigDataCloud is more reliable for client-side reverse geocoding as Nominatim often blocks generic browser requests
-        const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
-        const data = await res.json();
-        
         let addressStr = '';
-        if (data.locality) addressStr += data.locality + ', ';
-        if (data.city && data.city !== data.locality) addressStr += data.city + ', ';
-        if (data.principalSubdivision) addressStr += data.principalSubdivision + ', ';
-        if (data.countryName) addressStr += data.countryName;
-        
-        // Fallback to nominatim if BigDataCloud doesn't give a good result
-        if (addressStr.length < 10) {
-           const nomRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-           const nomData = await nomRes.json();
-           if (nomData && nomData.display_name) {
-             addressStr = nomData.display_name;
-           }
+
+        // Try Nominatim first for precise street/area level data
+        try {
+          const nomRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`);
+          const nomData = await nomRes.json();
+          if (nomData && nomData.address) {
+            const addr = nomData.address;
+            const parts = [
+              addr.amenity,
+              addr.road,
+              addr.neighbourhood,
+              addr.suburb,
+              addr.city_district,
+              addr.city || addr.town || addr.village,
+              addr.state,
+              addr.postcode
+            ].filter(Boolean); // Remove undefined/null/empty strings
+            
+            if (parts.length > 0) {
+              // Deduplicate adjacent identical parts
+              const uniqueParts = parts.filter((part, idx) => idx === 0 || part !== parts[idx - 1]);
+              addressStr = uniqueParts.join(', ');
+            } else if (nomData.display_name) {
+              addressStr = nomData.display_name;
+            }
+          }
+        } catch (e) {
+          console.log("Nominatim failed, trying fallback...");
+        }
+
+        // Fallback to BigDataCloud if Nominatim fails or blocks the request
+        if (!addressStr || addressStr.length < 5) {
+          const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+          const data = await res.json();
+          
+          if (data.locality) addressStr += data.locality + ', ';
+          if (data.city && data.city !== data.locality) addressStr += data.city + ', ';
+          if (data.principalSubdivision) addressStr += data.principalSubdivision + ', ';
+          if (data.countryName) addressStr += data.countryName;
+          addressStr = addressStr.replace(/,\s*$/, "");
         }
         
         if (addressStr) {
-          setProfileData(prev => ({ ...prev, address: addressStr.replace(/,\s*$/, "") }));
+          setProfileData(prev => ({ ...prev, address: addressStr }));
         } else {
-          alert("Could not determine address from location");
+          alert("Could not determine precise address from location");
         }
       } catch (e) {
         console.error(e);
