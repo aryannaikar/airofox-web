@@ -529,11 +529,12 @@ export default function Header() {
                 Sign In
               </Link>
             )}
-            <Link href="/book" onClick={(e) => handleProtectedAction(e, 'book')} className="flex items-center justify-center" style={{ background: theme === 'dark' ? '#ff7a00' : '#08244c', color: '#fff', textDecoration: 'none', borderRadius: '10px', padding: '12px 24px', fontWeight: 700, fontSize: '14px', transition: 'background 0.25s' }}
-              onMouseEnter={e => e.currentTarget.style.background = theme === 'dark' ? '#e06c00' : '#ff7a00'}
-              onMouseLeave={e => e.currentTarget.style.background = theme === 'dark' ? '#ff7a00' : '#08244c'}>
-              Book Now
-            </Link>
+            <a href="tel:+919326065836" className="flex items-center justify-center gap-2" style={{ background: theme === 'dark' ? '#ff7a00' : '#08244c', color: '#fff', textDecoration: 'none', borderRadius: '10px', padding: '12px 24px', fontWeight: 700, fontSize: '14px', transition: 'background 0.25s' }}
+              onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.background = theme === 'dark' ? '#e06c00' : '#ff7a00'}
+              onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.background = theme === 'dark' ? '#ff7a00' : '#08244c'}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></svg>
+              Call Us
+            </a>
           </div>
 
           {/* Mobile Right Controls Container */}
@@ -903,23 +904,18 @@ export default function Header() {
 
         {/* CTA buttons */}
         <div style={{ display: 'flex', gap: '10px', padding: '12px 20px 20px' }}>
-          <Link
-            href="/book"
-            onClick={(e) => {
-              setOpen(false);
-              handleProtectedAction(e, 'book');
-            }}
+          <a
+            href="tel:+919326065836"
+            onClick={() => setOpen(false)}
             style={{
               flex: 1, padding: '17px 0', borderRadius: '14px',
               background: theme === 'dark' ? '#ff7a00' : '#08244c', color: '#fff', fontWeight: 700, fontSize: '14px',
               textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
             }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/>
-            </svg>
-            Book Now
-          </Link>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></svg>
+            Call Us
+          </a>
           <a
             href="https://wa.me/919326065836"
             onClick={(e) => handleProtectedAction(e, 'whatsapp')}
