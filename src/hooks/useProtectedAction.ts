@@ -24,7 +24,8 @@ export function useProtectedAction() {
 
     if (actionType === 'whatsapp') {
       e.preventDefault();
-      const message = `Hi AiroFox, I need help with ${serviceName}.\n\nMy Details:\nName: ${user.name}\nEmail: ${user.email}`;
+      const addressLine = user.address ? `\nAddress: ${user.address}` : '';
+      const message = `Hi AiroFox, I need help with ${serviceName}.\n\nMy Details:\nName: ${user.name}\nEmail: ${user.email}${addressLine}`;
       const url = `https://wa.me/919326065836?text=${encodeURIComponent(message)}`;
       
       // Log an admin notification in Supabase

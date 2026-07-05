@@ -52,7 +52,11 @@ export default function BookingWizard() {
       router.push('/login');
     } else {
       const user = JSON.parse(userStr);
-      setCustomerDetails(prev => ({ ...prev, name: user.name || '' }));
+      setCustomerDetails({ 
+        name: user.name || '',
+        phone: user.phone || '',
+        address: user.address || ''
+      });
     }
   }, [router]);
 

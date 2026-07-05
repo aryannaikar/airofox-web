@@ -46,7 +46,10 @@ const NAV = [
 
 export default function Header() {
   const [open, setOpen] = useState(false);
-  const [user, setUser] = useState<{name: string, email: string} | null>(null);
+  const [user, setUser] = useState<{name: string, email: string, phone?: string, address?: string} | null>(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileData, setProfileData] = useState({ name: '', phone: '', address: '' });
+  const [isLocating, setIsLocating] = useState(false);
   const pathname = usePathname();
   const { handleProtectedAction } = useProtectedAction();
 
@@ -61,6 +64,45 @@ export default function Header() {
       }
     }
     window.location.reload();
+  };
+
+  const handleSaveProfile = async () => {
+    if (!user) return;
+    try {
+      await db.updateUser(user.email, profileData);
+      const updatedUser = { ...user, ...profileData };
+      setUser(updatedUser);
+      localStorage.setItem('af_logged_user', JSON.stringify(updatedUser));
+      setShowProfileModal(false);
+    } catch(e) {
+      console.error(e);
+    }
+  };
+
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(async (position) => {
+      try {
+        const { latitude, longitude } = position.coords;
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+        const data = await res.json();
+        if (data && data.display_name) {
+          setProfileData(prev => ({ ...prev, address: data.display_name }));
+        }
+      } catch (e) {
+        console.error(e);
+        alert("Failed to get address from location");
+      } finally {
+        setIsLocating(false);
+      }
+    }, () => {
+      setIsLocating(false);
+      alert("Unable to retrieve your location");
+    });
   };
 
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -95,7 +137,13 @@ export default function Header() {
     const userStr = localStorage.getItem('af_logged_user');
     if (userStr) {
       try {
-        setUser(JSON.parse(userStr));
+        const u = JSON.parse(userStr);
+        setUser(u);
+        setProfileData({
+          name: u.name || '',
+          phone: u.phone || '',
+          address: u.address || ''
+        });
       } catch(e) {}
     }
   }, [pathname]);
@@ -394,9 +442,13 @@ export default function Header() {
 
             {user ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontWeight: 600, fontSize: '15px', color: theme === 'dark' ? '#cbd5e1' : '#08244c' }}>
+                <button 
+                  onClick={() => setShowProfileModal(true)}
+                  style={{ fontWeight: 600, fontSize: '15px', color: theme === 'dark' ? '#cbd5e1' : '#08244c', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                  className="hover:text-brand-orange dark:hover:text-brand-orange transition-colors"
+                >
                   Hi, {user.name}
-                </span>
+                </button>
                 <button
                   onClick={handleLogout}
                   style={{
@@ -734,9 +786,12 @@ export default function Header() {
               alignItems: 'center',
               justifyContent: 'space-between'
             }}>
-              <p style={{ fontWeight: 700, fontSize: '15px', color: theme === 'dark' ? '#cbd5e1' : '#08244c', margin: 0 }}>
+              <button 
+                onClick={() => { setOpen(false); setShowProfileModal(true); }}
+                style={{ fontWeight: 700, fontSize: '15px', color: theme === 'dark' ? '#cbd5e1' : '#08244c', margin: 0, background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}
+              >
                 Hi, {user.name}
-              </p>
+              </button>
               <button
                 onClick={async () => {
                   setOpen(false);
@@ -836,6 +891,44 @@ export default function Header() {
           </a>
         </div>
       </div>
+
+      {/* Profile Modal */}
+      {showProfileModal && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <h3 className="font-bold text-lg text-brand-navy dark:text-white">Edit Profile</h3>
+              <button onClick={() => setShowProfileModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-brand-navy dark:text-slate-200 mb-1">Name</label>
+                <input type="text" value={profileData.name} onChange={e => setProfileData(p => ({...p, name: e.target.value}))} className="w-full px-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-orange text-slate-800 dark:text-white" />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-brand-navy dark:text-slate-200 mb-1">Phone</label>
+                <input type="tel" value={profileData.phone} onChange={e => setProfileData(p => ({...p, phone: e.target.value}))} className="w-full px-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-orange text-slate-800 dark:text-white" />
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-semibold text-brand-navy dark:text-slate-200">Address</label>
+                  <button onClick={handleGetLocation} disabled={isLocating} className="text-xs font-bold text-brand-orange hover:underline flex items-center gap-1 disabled:opacity-50">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                    {isLocating ? 'Locating...' : 'Use Current Location'}
+                  </button>
+                </div>
+                <textarea rows={3} value={profileData.address} onChange={e => setProfileData(p => ({...p, address: e.target.value}))} placeholder="Enter your full address..." className="w-full px-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-orange text-slate-800 dark:text-white resize-none" />
+              </div>
+            </div>
+            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 flex justify-end gap-3">
+              <button onClick={() => setShowProfileModal(false)} className="px-5 py-2 rounded-xl font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Cancel</button>
+              <button onClick={handleSaveProfile} className="px-5 py-2 rounded-xl font-semibold bg-brand-orange text-white hover:bg-brand-orange/90 transition-colors">Save Changes</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

@@ -20,6 +20,7 @@ export interface User {
   name: string;
   email: string;
   phone: string;
+  address?: string;
   created_at: string;
 }
 
@@ -360,6 +361,23 @@ class Database {
     }
     
     return newUser;
+  }
+
+  async updateUser(email: string, data: Partial<User>): Promise<User> {
+    if (isSupabaseConfigured && supabase) {
+      const { data: updatedData, error } = await supabase.from('users').update(data).eq('email', email.toLowerCase()).select().single();
+      if (error) throw error;
+      return updatedData;
+    }
+
+    const users = await this.getUsers();
+    const idx = users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
+    if (idx === -1) throw new Error('User not found');
+    
+    const updated = { ...users[idx], ...data };
+    users[idx] = updated;
+    this.setStorageItem('af_users', users);
+    return updated;
   }
 
   // --- Workers ---
